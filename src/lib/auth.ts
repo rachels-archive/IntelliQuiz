@@ -22,20 +22,21 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("Email and password are required");
         }
 
         const existingUser = await db.user.findUnique({
           where: { email: credentials?.email },
         });
+
         if (!existingUser) {
-          return null;
+          throw new Error("User not found");
         }
 
         const passwordMatch = await compare(credentials.password, existingUser.password);
 
         if (!passwordMatch) {
-          return null;
+          throw new Error("Invalid email or password");
         }
 
         return {
