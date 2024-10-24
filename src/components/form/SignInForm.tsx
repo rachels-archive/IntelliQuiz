@@ -36,12 +36,8 @@ const SignInForm = () => {
     });
 
     if (signInData?.error) {
-      if (signInData.error === "Invalid credentials") {
-        form.setError("email", { message: "Invalid email or password" });
-        form.setError("password", { message: "Invalid email or password" });
-      } else if (signInData.error === "User not found") {
-        form.setError("email", { message: "User not found" });
-      }
+      form.setError("email", { message: signInData.error });
+      form.setError("password", { message: signInData.error });
       toast({
         title: "Error",
         description: signInData.error,
@@ -49,7 +45,7 @@ const SignInForm = () => {
       });
     } else {
       router.refresh();
-      router.push("/admin");
+      router.push("/dashboard");
     }
   };
 
