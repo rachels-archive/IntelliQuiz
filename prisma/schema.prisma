@@ -37,11 +37,12 @@ model Quiz {
 }
 
 model Question {
-  id       String @id @default(cuid())
-  question String // Make sure this is required
-  answer   String // Make sure this is required
-  quizId   String // Make sure this is required
-  options  Json // If options are optional, keep it as is
+  id        String  @id @default(cuid())
+  question  String // Make sure this is required
+  answer    String // Make sure this is required
+  quizId    String // Make sure this is required
+  options   Json // If options are optional, keep it as is
+  isCorrect Boolean
 
   quiz Quiz @relation(fields: [quizId], references: [id])
 
