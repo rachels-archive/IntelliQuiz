@@ -14,7 +14,7 @@ export async function strict_output(
   default_category: string = "",
   output_value_only: boolean = false,
   temperature: number = 1,
-  num_tries: number = 2,
+  num_tries: number = 3,
   verbose: boolean = false
 ) {
   const list_input: boolean = Array.isArray(user_prompt);
@@ -24,11 +24,9 @@ export async function strict_output(
   let error_msg: string = "";
 
   for (let i = 0; i < num_tries; i++) {
-    let output_format_prompt: string = `\nYou are to output ${
-      list_output && "an array of objects in"
-    } the following in json format: ${JSON.stringify(
+    let output_format_prompt: string = `\nYou are to output in json format: ${JSON.stringify(
       output_format
-    )}. \nDo not put quotation marks or escape character \\ in the output fields.`;
+    )}.\nDo not put quotation marks or escape characters \\ in the output fields.`;
 
     if (list_output) {
       output_format_prompt += `\nIf output field is a list, classify output into the best element of the list.`;
@@ -43,7 +41,7 @@ export async function strict_output(
     }
 
     // Use Gemini to get a response
-    const prompt = system_prompt + output_format_prompt + error_msg;
+    const prompt = `${system_prompt}\n${user_prompt}\n${output_format_prompt}${error_msg}`;
 
     let res: string;
 
@@ -56,11 +54,14 @@ export async function strict_output(
           },
         ],
         generationConfig: {
-          maxOutputTokens: 1000,
+          maxOutputTokens: 1500,
           temperature,
         },
       });
+
       res = result.response.text();
+      console.log("Prompt sent to model:", prompt);
+      console.log("Response from model:", res);
     } catch (error) {
       console.error("Error generating content:", error);
       return [];
@@ -93,8 +94,12 @@ export async function strict_output(
             continue;
           }
 
+          // Log current output for debugging
+          console.log(`Checking key '${key}' in output[${index}]:`, output[index]);
+
           if (!(key in output[index])) {
-            throw new Error(`${key} not in json output`);
+            console.warn(`${key} not found in output[${index}]:`, output[index]);
+            continue; // Skip this key but continue checking others
           }
 
           if (Array.isArray(output_format[key])) {

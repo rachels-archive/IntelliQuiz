@@ -66,9 +66,36 @@ const QuizForm = () => {
     return false;
   };
 
+  /*
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
     console.log({ title, inputType, numOfQuestions, numOfChoices, file, textInput });
+  };
+  */
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    const response = await fetch("/api/quiz", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        inputType,
+        textInput,
+        numOfQuestions,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Generated Questions:", data.questions);
+    } else {
+      console.error("Error generating quiz:", data.error);
+    }
   };
 
   return (
