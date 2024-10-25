@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -30,21 +24,20 @@ model Quiz {
   createdAt   DateTime   @default(now())
   timeStarted DateTime
   timeEnded   DateTime
-  user        User       @relation(fields: [userId], references: [id])
   questions   Question[]
+  user        User       @relation(fields: [userId], references: [id])
 
-  @@index([userId], name: "userId")
+  @@index([userId], map: "userId")
 }
 
 model Question {
   id        String  @id @default(cuid())
-  question  String // Make sure this is required
-  answer    String // Make sure this is required
-  quizId    String // Make sure this is required
-  options   Json // If options are optional, keep it as is
+  question  String
+  answer    String
+  quizId    String
+  options   Json
   isCorrect Boolean
+  quiz      Quiz    @relation(fields: [quizId], references: [id])
 
-  quiz Quiz @relation(fields: [quizId], references: [id])
-
-  @@index([quizId], name: "quizId")
+  @@index([quizId], map: "quizId")
 }

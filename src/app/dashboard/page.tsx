@@ -8,6 +8,7 @@ export const metadata = {
 
 const page = async () => {
   const session = await getServerSession(authOptions);
+
   if (!session?.user) {
     redirect("/");
   }
