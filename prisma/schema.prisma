@@ -9,16 +9,41 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  username String  @unique
-  password String
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  username  String   @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  quiz      Quiz[]
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  userId      Int
+  createdAt   DateTime   @default(now())
+  timeStarted DateTime
+  timeEnded   DateTime
+  user        User       @relation(fields: [userId], references: [id])
+  questions   Question[]
+
+  @@index([userId], name: "userId")
+}
+
+model Question {
+  id       String @id @default(cuid())
+  question String // Make sure this is required
+  answer   String // Make sure this is required
+  quizId   String // Make sure this is required
+  options  Json // If options are optional, keep it as is
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+
+  @@index([quizId], name: "quizId")
 }
