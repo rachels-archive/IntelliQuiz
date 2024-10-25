@@ -9,7 +9,7 @@ export const metadata = {
 const page = async () => {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    redirect("/"); // Use redirect correctly
+    redirect("/");
   }
 
   return (
@@ -35,7 +35,7 @@ const page = async () => {
 
       <div className="w-1/2 grid grid-cols-2 gap-4 mt-4 bg-[#57463E] p-4">
         <button className="bg-[#FDE8D3] rounded-lg shadow-md py-4 font-semibold text-center">Generate Quiz</button>
-        <button className="bg-[#FDE8D3] rounded-lg shadow-md py-4 font-semibold text-center">Generate Quiz</button>
+        <button className="bg-[#FDE8D3] rounded-lg shadow-md py-4 font-semibold text-center">View Quiz History</button>
       </div>
     </div>
   );

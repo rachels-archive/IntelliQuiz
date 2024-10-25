@@ -1,5 +1,6 @@
 // app/page.tsx
 import { authOptions } from "@/lib/auth";
+import { url } from "inspector";
 import { User } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";

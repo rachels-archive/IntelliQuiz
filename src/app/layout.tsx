@@ -15,7 +15,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body
+        className={inter.className}
+        style={{
+          backgroundImage: "url('/images/bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          height: "100vh",
+        }}
+      >
         <Provider>
           <main className="h-screen flex flex-col">
             <Navbar />
