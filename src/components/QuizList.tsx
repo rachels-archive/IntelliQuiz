@@ -4,6 +4,7 @@ import { Question, Quiz } from "@prisma/client";
 import { ChevronRightIcon, Timer } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import QuizCounter from "./ui/QuizCounter";
 
 type Props = {
   quiz: Quiz & { questions: Pick<Question, "id" | "options" | "question">[] };
@@ -35,8 +36,8 @@ const QuizList = ({ quiz }: Props) => {
           <Timer className="mr-2" />
           <span>00:00</span>
         </div>
+        <QuizCounter />
       </div>
-      {/*TODO: COUNTER */}
       <Card className="w-full mt-4">
         <CardHeader className="flex flex-row items-center">
           <CardTitle className="mr-5 text-center divide-y divide-zinc-600/50">
