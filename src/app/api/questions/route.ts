@@ -50,14 +50,6 @@ export const POST = async (req: Request) => {
           // If the answer does not match any option, adjust it
           q.answer = options[0]; // Or use a different strategy to select an answer
         }
-
-        // Shuffle the options
-        const shuffledOptions = [q.answer, ...options.filter((option) => option !== q.answer)].sort(
-          () => Math.random() - 0.5
-        );
-
-        // Assign the shuffled options back to the question object
-        [q.option1, q.option2, q.option3, q.option4] = shuffledOptions;
       });
       if (
         !Array.isArray(questions) ||
