@@ -11,6 +11,7 @@ const QuizForm = () => {
   const [file, setFile] = useState<File | null>(null);
   const [textInput, setTextInput] = useState<string>("");
   const [fileError, setFileError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
@@ -75,26 +76,36 @@ const QuizForm = () => {
   */
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent further submissions while loading
 
-    const response = await fetch("/api/quiz", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        inputType,
-        textInput,
-        numOfQuestions,
-      }),
-    });
+    setIsLoading(true); // Set loading state
+    try {
+      const response = await fetch("/api/quiz", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          inputType,
+          textInput,
+          numOfQuestions,
+          numOfChoices,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok) {
-      console.log("Generated Questions:", data.questions);
-    } else {
-      console.error("Error generating quiz:", data.error);
+      if (response.ok) {
+        console.log("Generated Questions:", data.questions);
+      } else {
+        console.error("Error generating quiz:", data.error);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    } finally {
+      setIsLoading(false); // Reset loading state after request
     }
   };
 
