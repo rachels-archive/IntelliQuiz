@@ -31,20 +31,20 @@ export const POST = async (req: Request) => {
     const body = await req.json();
     const { title, inputType, textInput, numOfQuestions, numOfChoices } = body;
 
-    // Validate input
     if (!title || !inputType || (inputType === "text" && !textInput)) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
     const quiz = await prisma.quiz.create({
       data: {
+        title,
         timeStarted: new Date(),
         timeEnded: new Date(),
-        userId: parseInt(session.user.id), // Ensure this is a valid number
+        userId: parseInt(session.user.id),
       },
     });
 
-    const apiUrl = process.env.API_URL || "https://localhost:3000"; // Use HTTPS
+    const apiUrl = process.env.API_URL || "https://localhost:3000";
 
     const { data } = await axios.post(`${apiUrl}/api/questions`, {
       title,
@@ -54,7 +54,6 @@ export const POST = async (req: Request) => {
       numOfChoices,
     });
 
-    // Validate response data
     if (!data || !data.questions || !Array.isArray(data.questions)) {
       throw new Error("Invalid response from /api/questions endpoint");
     }
@@ -74,7 +73,6 @@ export const POST = async (req: Request) => {
         ...Object.values(question).filter((value) => value !== question.question && value !== question.answer),
       ];
 
-      // Ensure options are shuffled to maintain randomness
       options = shuffleArray(options);
 
       return {
@@ -87,7 +85,6 @@ export const POST = async (req: Request) => {
     });
 
     try {
-      // Create questions in the database
       await prisma.question.createMany({
         data: quizData,
       });
