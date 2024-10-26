@@ -21,10 +21,10 @@ model User {
 model Quiz {
   id          String     @id @default(cuid())
   userId      Int
+  title       String
   createdAt   DateTime   @default(now())
   timeStarted DateTime
   timeEnded   DateTime
-  title       String
   questions   Question[]
   user        User       @relation(fields: [userId], references: [id])
 

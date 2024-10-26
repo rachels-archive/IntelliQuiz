@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import React from "react";
 import prisma from "@/lib/db";
+import QuizCard from "@/components/QuizCard";
 
 export const metadata = {
   title: "Playing Quiz...",
@@ -26,11 +27,21 @@ const page = async ({ params: { quizId } }: Props) => {
       id: quizId,
     },
     include: {
-      questions: true,
+      questions: {
+        select: {
+          id: true,
+          question: true,
+          options: true,
+        },
+      },
     },
   });
 
-  return <pre>{JSON.stringify(quiz, null, 2)}</pre>;
+  if (!quiz) {
+    return redirect("/generate-quiz");
+  }
+
+  return <QuizCard quiz={quiz} />;
 };
 
 export default page;
