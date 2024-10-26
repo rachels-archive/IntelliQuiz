@@ -4,6 +4,14 @@ import prisma from "@/lib/db";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
+const shuffleArray = (array: string[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
 // POST /api/quiz
 export const POST = async (req: Request) => {
   try {
@@ -32,7 +40,7 @@ export const POST = async (req: Request) => {
       data: {
         timeStarted: new Date(),
         timeEnded: new Date(),
-        userId: session.user.id, // Ensure this is a valid number
+        userId: parseInt(session.user.id), // Ensure this is a valid number
       },
     });
 
@@ -74,16 +82,9 @@ export const POST = async (req: Request) => {
         answer: question.answer,
         options: JSON.stringify(options),
         quizId: quiz.id,
+        isCorrect: question.answer === options[0],
       };
     });
-
-    const shuffleArray = (array: string[]) => {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    };
 
     try {
       // Create questions in the database

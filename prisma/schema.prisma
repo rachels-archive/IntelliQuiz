@@ -31,13 +31,13 @@ model Quiz {
 }
 
 model Question {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   question  String
   answer    String
   quizId    String
   options   Json
-  isCorrect Boolean
-  quiz      Quiz    @relation(fields: [quizId], references: [id])
+  isCorrect Boolean?
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
 
   @@index([quizId], map: "quizId")
 }
