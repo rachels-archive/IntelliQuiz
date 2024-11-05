@@ -1,3 +1,4 @@
+import ResultsCard from "@/components/statistics/ResultsCard";
 import { buttonVariants } from "@/components/ui/button";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
@@ -41,7 +42,7 @@ const Statistics = async ({ params: { quizId } }: Props) => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-7">
-          {/*<ResultsCard />*/}
+          <ResultsCard accuracy={49} />
           {/*<AccuracyCard />*/}
           {/*<TimeTakenCard />*/}
         </div>
