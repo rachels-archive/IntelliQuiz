@@ -1,3 +1,4 @@
+import AccuracyCard from "@/components/statistics/AccuracyCard";
 import ResultsCard from "@/components/statistics/ResultsCard";
 import { buttonVariants } from "@/components/ui/button";
 import { authOptions } from "@/lib/auth";
@@ -43,7 +44,7 @@ const Statistics = async ({ params: { quizId } }: Props) => {
 
         <div className="grid gap-4 md:grid-cols-7">
           <ResultsCard accuracy={49} />
-          {/*<AccuracyCard />*/}
+          <AccuracyCard accuracy={40} />
           {/*<TimeTakenCard />*/}
         </div>
 
