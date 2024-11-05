@@ -9,6 +9,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInSeconds } from "date-fns";
 import { cn, formatTimeDelta } from "@/lib/utils";
+
 import Link from "next/link";
 
 interface CheckAnswerPayload {
@@ -30,8 +31,20 @@ const QuizList = ({ quiz }: Props) => {
   const [startTime] = useState(new Date());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [finalTime, setFinalTime] = useState<number>(0);
+  const [now, setNow] = useState<Date>(new Date());
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!hasEnded) {
+        setNow(new Date());
+      }
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [hasEnded]);
 
   // Update timer every second while quiz is active
   useEffect(() => {
@@ -123,7 +136,7 @@ const QuizList = ({ quiz }: Props) => {
     return (
       <div className="absolute flex flex-col justify-center -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
         <div className="px-4 py-2 mt-2 font-semibold text-white bg-green-500 rounded-md whitespace-nowrap">
-          You Completed in {formatTimeDelta(elapsedTime)}
+          You Completed in {formatTimeDelta(differenceInSeconds(now, quiz.timeStarted))}
         </div>
         <Link href={`/statistics/${quiz.id}`} className={cn(buttonVariants({ size: "lg" }), "mt-2")}>
           View Statistics
@@ -143,7 +156,7 @@ const QuizList = ({ quiz }: Props) => {
           </p>
           <div className="flex self-start mt-3 text-slate-400">
             <Timer className="mr-2" />
-            <span>00:00</span>
+            <span>{formatTimeDelta(differenceInSeconds(now, quiz.timeStarted))}</span>
           </div>
         </div>
         <QuizCounter correctAnswers={correctAnswers} wrongAnswers={wrongAnswers} />
