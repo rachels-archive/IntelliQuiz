@@ -1,4 +1,5 @@
 import AccuracyCard from "@/components/statistics/AccuracyCard";
+import QuestionList from "@/components/statistics/QuestionList";
 import ResultsCard from "@/components/statistics/ResultsCard";
 import TimeTakenCard from "@/components/statistics/TimeTakenCard";
 import { buttonVariants } from "@/components/ui/button";
@@ -25,11 +26,23 @@ const Statistics = async ({ params: { quizId } }: Props) => {
 
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },
+    include: { questions: true },
   });
 
   if (!quiz) {
     redirect("/generate-quiz");
   }
+
+  let accuracy: number = 0;
+
+  let totalCorrect = quiz.questions.reduce((acc, question) => {
+    if (question.isCorrect) {
+      return acc + 1;
+    }
+    return acc;
+  }, 0);
+
+  accuracy = Math.round((totalCorrect / quiz.questions.length) * 100 * 100) / 100;
 
   return (
     <>
@@ -44,12 +57,12 @@ const Statistics = async ({ params: { quizId } }: Props) => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-7">
-          <ResultsCard accuracy={49} />
-          <AccuracyCard accuracy={40} />
-          <TimeTakenCard timeStarted={new Date()} timeEnded={new Date()} />
+          <ResultsCard accuracy={accuracy} />
+          <AccuracyCard accuracy={accuracy} />
+          <TimeTakenCard timeStarted={quiz.timeStarted} timeEnded={quiz.timeEnded} />
         </div>
 
-        {/*<QuestionsList />*/}
+        <QuestionList questions={quiz.questions} />
       </div>
     </>
   );

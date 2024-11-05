@@ -17,6 +17,14 @@ interface CheckAnswerPayload {
   userAnswer: string;
 }
 
+interface QuizCompletionPayload {
+  quizId: string;
+  timeStarted: Date;
+  timeEnded: Date;
+  correctAnswers: number;
+  totalQuestions: number;
+}
+
 type Props = {
   quiz: Quiz & { questions: Pick<Question, "id" | "options" | "question">[] };
 };
@@ -28,13 +36,12 @@ const QuizList = ({ quiz }: Props) => {
   const [wrongAnswers, setWrongAnswers] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasEnded, setHasEnded] = useState<boolean>(false);
-  const [startTime] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [finalTime, setFinalTime] = useState<number>(0);
   const [now, setNow] = useState<Date>(new Date());
 
   const { toast } = useToast();
-
   useEffect(() => {
     const interval = setInterval(() => {
       if (!hasEnded) {
@@ -86,6 +93,29 @@ const QuizList = ({ quiz }: Props) => {
       userAnswer: options[selectedChoice],
     };
 
+    const handleQuizCompletion = async () => {
+      const endTime = new Date();
+      setFinalTime(differenceInSeconds(endTime, startTime));
+      setHasEnded(true);
+
+      try {
+        await axios.post("/api/completeQuiz", {
+          quizId: quiz.id,
+          timeStarted: startTime,
+          timeEnded: endTime,
+          correctAnswers: correctAnswers,
+          totalQuestions: quiz.questions.length,
+        } as QuizCompletionPayload);
+      } catch (error) {
+        console.error("Failed to save quiz completion:", error);
+        toast({
+          title: "Error",
+          description: "Failed to save your quiz results.",
+          variant: "destructive",
+        });
+      }
+    };
+
     try {
       const result = await checkAnswer(payload);
       if (result.isCorrect) {
@@ -106,18 +136,11 @@ const QuizList = ({ quiz }: Props) => {
         });
       }
 
-      /*
-      if (questionIndex < quiz.questions.length - 1) {
-        setQuestionIndex((prev) => prev + 1);
-        setSelectedChoice(0); // Reset selected choice for next question
-        setHasEnded(true);
-        return;
-      }*/
-
       if (questionIndex === quiz.questions.length - 1) {
-        // Save the final time when quiz ends
+        await handleQuizCompletion();
+        /* Save the final time when quiz ends
         setFinalTime(differenceInSeconds(new Date(), startTime));
-        setHasEnded(true);
+        setHasEnded(true);*/
       } else {
         setQuestionIndex((prev) => prev + 1);
         setSelectedChoice(0);
@@ -136,7 +159,7 @@ const QuizList = ({ quiz }: Props) => {
     return (
       <div className="absolute flex flex-col justify-center -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
         <div className="px-4 py-2 mt-2 font-semibold text-white bg-green-500 rounded-md whitespace-nowrap">
-          You Completed in {formatTimeDelta(differenceInSeconds(now, quiz.timeStarted))}
+          You Completed in {formatTimeDelta(elapsedTime)}
         </div>
         <Link href={`/statistics/${quiz.id}`} className={cn(buttonVariants({ size: "lg" }), "mt-2")}>
           View Statistics
@@ -156,7 +179,7 @@ const QuizList = ({ quiz }: Props) => {
           </p>
           <div className="flex self-start mt-3 text-slate-400">
             <Timer className="mr-2" />
-            <span>{formatTimeDelta(differenceInSeconds(now, quiz.timeStarted))}</span>
+            <span>{formatTimeDelta(hasEnded ? finalTime : elapsedTime)}</span>
           </div>
         </div>
         <QuizCounter correctAnswers={correctAnswers} wrongAnswers={wrongAnswers} />

@@ -3,12 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Hourglass } from "lucide-react";
 import { formatTimeDelta } from "@/lib/utils";
 import { differenceInSeconds } from "date-fns";
+
 type Props = {
   timeEnded: Date;
   timeStarted: Date;
 };
 
 const TimeTakenCard = ({ timeEnded, timeStarted }: Props) => {
+  const startDate = new Date(timeStarted);
+  const endDate = new Date(timeEnded);
+
   return (
     <Card className="md:col-span-4">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -16,7 +20,7 @@ const TimeTakenCard = ({ timeEnded, timeStarted }: Props) => {
         <Hourglass />
       </CardHeader>
       <CardContent>
-        <div className="text-sm font-medium">{formatTimeDelta(differenceInSeconds(timeEnded, timeStarted))}</div>
+        <div className="text-sm font-medium"> {formatTimeDelta(differenceInSeconds(endDate, startDate))}</div>
       </CardContent>
     </Card>
   );
