@@ -2,8 +2,12 @@
 
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
+import LoadingQuestions from "../LoadingQuestions";
+import { useRouter } from "next/navigation";
 
 const QuizForm = () => {
+  const router = useRouter();
+
   const [title, setTitle] = useState<string>("");
   const [inputType, setInputType] = useState<"text" | "file">("text");
   const [numOfQuestions, setNumOfQuestions] = useState<number>(10);
@@ -12,6 +16,8 @@ const QuizForm = () => {
   const [textInput, setTextInput] = useState<string>("");
   const [fileError, setFileError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [finishedLoading, setFinishedLoading] = useState<Boolean>(false);
+  const [quizId, setQuizId] = useState<string | null>(null);
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
@@ -67,18 +73,17 @@ const QuizForm = () => {
     return false;
   };
 
-  /*
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    console.log({ title, inputType, numOfQuestions, numOfChoices, file, textInput });
+  const handleLoadingComplete = () => {
+    if (quizId) {
+      router.push(`/quiz/${quizId}`);
+    }
   };
-  */
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isLoading) return; // Prevent further submissions while loading
-
     setIsLoading(true); // Set loading state
+
     try {
       const response = await fetch("/api/quiz", {
         method: "POST",
@@ -99,15 +104,19 @@ const QuizForm = () => {
 
       if (response.ok) {
         console.log("Generated Questions:", data.questions);
+        setQuizId(data.quizId); // Reset loading state after request
+        setFinishedLoading(true);
       } else {
         console.error("Error generating quiz:", data.error);
       }
     } catch (error) {
       console.error("Unexpected error:", error);
-    } finally {
-      setIsLoading(false); // Reset loading state after request
     }
   };
+
+  if (isLoading) {
+    return <LoadingQuestions finished={finishedLoading} onLoadingComplete={handleLoadingComplete} />;
+  }
 
   return (
     <div className="w-1/2">
