@@ -1,4 +1,4 @@
-import AccuracyCard from "@/components/statistics/AccuracyCard";
+import ScoreCard from "@/components/statistics/ScoreCard";
 import QuestionList from "@/components/statistics/QuestionList";
 import ResultsCard from "@/components/statistics/ResultsCard";
 import TimeTakenCard from "@/components/statistics/TimeTakenCard";
@@ -33,17 +33,6 @@ const Statistics = async ({ params: { quizId } }: Props) => {
     redirect("/generate-quiz");
   }
 
-  let accuracy: number = 0;
-
-  let totalCorrect = quiz.questions.reduce((acc, question) => {
-    if (question.isCorrect) {
-      return acc + 1;
-    }
-    return acc;
-  }, 0);
-
-  accuracy = Math.round((totalCorrect / quiz.questions.length) * 100 * 100) / 100;
-
   return (
     <>
       <div className="p-8 mx-auto w-full">
@@ -57,8 +46,8 @@ const Statistics = async ({ params: { quizId } }: Props) => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-7">
-          <ResultsCard accuracy={accuracy} />
-          <AccuracyCard accuracy={accuracy} />
+          <ResultsCard score={quiz.latestScore} />
+          <ScoreCard score={quiz.latestScore} />
           <TimeTakenCard timeStarted={quiz.timeStarted} timeEnded={quiz.timeEnded} />
         </div>
 

@@ -3,21 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Target } from "lucide-react";
 
 type Props = {
-  accuracy: number;
+  score: number;
 };
 
-const AccuracyCard = ({ accuracy }: Props) => {
+const ScoreCard = ({ score }: Props) => {
   return (
     <Card className="md:col-span-3">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-2xl font-bold">Average Accuracy</CardTitle>
+        <CardTitle className="text-2xl font-bold">Latest Score</CardTitle>
         <Target />
       </CardHeader>
       <CardContent>
-        <div className="text-sm font-medium">{accuracy.toString() + "%"}</div>
+        <div className="text-sm font-medium">{score.toString() + "%"}</div>
       </CardContent>
     </Card>
   );
 };
 
-export default AccuracyCard;
+export default ScoreCard;

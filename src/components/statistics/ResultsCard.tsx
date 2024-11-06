@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Award, Trophy } from "lucide-react";
 
 type Props = {
-  accuracy: number;
+  score: number;
 };
 
-const ResultsCard = ({ accuracy }: Props) => {
+const ResultsCard = ({ score }: Props) => {
   return (
     <Card className="md:col-span-7">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
@@ -14,7 +14,7 @@ const ResultsCard = ({ accuracy }: Props) => {
         <Award />
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center h-3/5">
-        {accuracy > 74 ? (
+        {score > 74 ? (
           <>
             <Trophy className="mr-4" stroke="gold" size={50} />
             <div className="flex flex-col text-2xl font-semibold text-yellow-400">
@@ -22,7 +22,7 @@ const ResultsCard = ({ accuracy }: Props) => {
               <span className="text-sm text-center text-black opacity-50">{"> 75% accuracy"}</span>
             </div>
           </>
-        ) : accuracy > 49 ? (
+        ) : score > 49 ? (
           <>
             <Trophy className="mr-4" stroke="silver" size={50} />
             <div className="flex flex-col text-2xl font-semibold text-gray-400">
