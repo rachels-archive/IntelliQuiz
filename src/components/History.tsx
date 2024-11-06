@@ -41,7 +41,7 @@ const History = async ({ userId }: Props) => {
                     Review Questions
                   </button>
                 </Link>
-                <Link href={`/statistics/${quiz.id}`}>
+                <Link href={`/quiz/${quiz.id}`}>
                   <button className="text-md w-full font-semibold bg-[#57463E] px-5 py-2 rounded-lg text-white">
                     Retry Quiz
                   </button>
