@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata = {
@@ -35,8 +36,16 @@ const page = async () => {
       <h2 className="text-2xl font-bold mt-4">Quiz</h2>
 
       <div className="w-1/2 grid grid-cols-2 gap-4 mt-4 bg-[#57463E] p-4">
-        <button className="bg-[#FDE8D3] rounded-lg shadow-md py-4 font-semibold text-center">Generate Quiz</button>
-        <button className="bg-[#FDE8D3] rounded-lg shadow-md py-4 font-semibold text-center">View Quiz History</button>
+        <Link href="/generate-quiz">
+          <button className="bg-[#FDE8D3] w-full rounded-lg shadow-md py-4 font-semibold text-center">
+            Generate Quiz
+          </button>
+        </Link>
+        <Link href="/quiz-history">
+          <button className="bg-[#FDE8D3] w-full rounded-lg shadow-md py-4 font-semibold text-center">
+            View Quiz History
+          </button>
+        </Link>
       </div>
     </div>
   );
