@@ -11,7 +11,7 @@ const History = async ({ userId }: Props) => {
       userId,
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
   return (
