@@ -1,6 +1,8 @@
 import History from "@/components/History";
+import { buttonVariants } from "@/components/ui/button";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -14,7 +16,13 @@ const page = async (props: Props) => {
   }
   return (
     <div className="w-full">
-      <h3 className="font-bold text-center text-3xl m-5">Quiz History</h3>
+      <div className="flex flex-row justify-between items-center w-3/4 mx-auto py-8">
+        <h3 className="font-bold text-center text-3xl">Quiz History</h3>
+        <Link href="/dashboard" className={buttonVariants()}>
+          Back to Dashboard
+        </Link>
+      </div>
+
       <History userId={parseInt(session.user.id)} />
     </div>
   );

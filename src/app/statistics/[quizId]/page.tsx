@@ -35,7 +35,7 @@ const Statistics = async ({ params: { quizId } }: Props) => {
 
   return (
     <>
-      <div className="p-8 mx-auto w-full">
+      <div className="px-20 py-8 mx-auto w-full">
         <div className="flex items-center justify-between space-y-2 mb-3">
           <h3 className="text-3xl font-bold tracking-tight">Statistics</h3>
           <div className="flex items-center space-x-2">

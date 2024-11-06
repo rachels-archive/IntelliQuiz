@@ -9,7 +9,6 @@ type Props = {
 const QuestionList = ({ questions }: Props) => {
   return (
     <Table className="mt-4 bg-white rounded-lg">
-      <TableCaption>End of list.</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className="w-[10px]">No.</TableHead>
