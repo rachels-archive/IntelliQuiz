@@ -26,6 +26,7 @@ model Quiz {
   timeStarted DateTime
   timeEnded   DateTime
   questions   Question[]
+  latestScore Float      @default(0)
   user        User       @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "userId")

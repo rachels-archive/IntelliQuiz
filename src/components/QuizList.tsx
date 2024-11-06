@@ -22,7 +22,6 @@ interface QuizCompletionPayload {
   timeStarted: Date;
   timeEnded: Date;
   correctAnswers: number;
-  totalQuestions: number;
 }
 
 type Props = {
@@ -79,7 +78,7 @@ const QuizList = ({ quiz }: Props) => {
     setIsLoading(true);
     try {
       const response = await axios.post("/api/checkAnswer", payload);
-      return response.data; // Expecting { isCorrect: boolean }
+      return response.data;
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +103,6 @@ const QuizList = ({ quiz }: Props) => {
           timeStarted: startTime,
           timeEnded: endTime,
           correctAnswers: correctAnswers,
-          totalQuestions: quiz.questions.length,
         } as QuizCompletionPayload);
       } catch (error) {
         console.error("Failed to save quiz completion:", error);
