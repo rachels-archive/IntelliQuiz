@@ -11,7 +11,7 @@ const UserAccountnav = () => {
           callbackUrl: `${window.location.origin}/sign-in`,
         })
       }
-      variant="destructive"
+      className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-white text-[#342925] hover:bg-gray-200 transition-colors h-10 px-4 py-2"
     >
       Sign Out
     </Button>
