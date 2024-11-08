@@ -12,6 +12,7 @@ export const metadata = {
 const page = async () => {
   const session = await getServerSession(authOptions);
 
+  console.log("Cirrent uyser", session?.user);
   if (!session?.user) {
     redirect("/");
   }

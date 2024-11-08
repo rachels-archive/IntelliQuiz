@@ -23,14 +23,35 @@ const QuizForm = () => {
     pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
   }, []);
 
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    let fullText = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(" ");
+      fullText += pageText + " ";
+    }
+
+    return fullText.trim();
+  };
+
   const validatePDFPages = async (file: File): Promise<boolean> => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-      console.log("Number of pages in uploaded PDF:", pdf.numPages);
-      return pdf.numPages === 1;
+      //console.log("Number of pages in uploaded PDF:", pdf.numPages);
+      //return pdf.numPages === 1;
+      if (pdf.numPages !== 1) {
+        setFileError("Please upload a PDF with exactly one page");
+        return false;
+      }
+      return true;
     } catch (error) {
       console.error("Error reading PDF:", error);
+      setFileError("Error reading PDF file. Please make sure it's a valid PDF.");
       return false;
     }
   };
@@ -61,15 +82,31 @@ const QuizForm = () => {
     }
   };
 
+  const validateTextInput = (text: string): boolean => {
+    if (text.trim().length === 0) {
+      setFileError("Text input cannot be empty");
+      return false;
+    }
+
+    if (text.length > 5000) {
+      setFileError("Text input must be less than 5000 characters");
+      return false;
+    }
+
+    return true;
+  };
+
   const isFormValid = (): boolean => {
     if (title.trim() === "") {
       return false;
     }
+
     if (inputType === "text") {
-      return textInput.trim() !== "";
+      return validateTextInput(textInput);
     } else if (inputType === "file") {
       return !!file && !fileError;
     }
+
     return false;
   };
 
@@ -79,12 +116,37 @@ const QuizForm = () => {
     }
   };
 
+  // Updated form submission handler for QuizForm component
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (isLoading) return; // Prevent further submissions while loading
-    setIsLoading(true); // Set loading state
+    if (isLoading) return;
+    setIsLoading(true);
+    setFileError("");
 
     try {
+      let contentToProcess = "";
+
+      if (inputType === "text") {
+        contentToProcess = textInput;
+      } else if (inputType === "file" && file) {
+        try {
+          contentToProcess = await extractTextFromPDF(file);
+
+          // Validate extracted text
+          if (!contentToProcess || contentToProcess.trim().length === 0) {
+            throw new Error("No text could be extracted from the PDF");
+          }
+
+          if (contentToProcess.length > 5000) {
+            throw new Error("Extracted text exceeds 5000 characters");
+          }
+        } catch (error) {
+          setFileError(error instanceof Error ? error.message : "Failed to process PDF");
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch("/api/quiz", {
         method: "POST",
         credentials: "include",
@@ -94,7 +156,7 @@ const QuizForm = () => {
         body: JSON.stringify({
           title,
           inputType,
-          textInput,
+          textInput: contentToProcess,
           numOfQuestions,
           numOfChoices,
         }),
@@ -103,14 +165,16 @@ const QuizForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Generated Questions:", data.questions);
-        setQuizId(data.quizId); // Reset loading state after request
+        setQuizId(data.quizId);
         setFinishedLoading(true);
       } else {
-        console.error("Error generating quiz:", data.error);
+        setFileError(data.error || "Failed to generate quiz");
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("Error:", error);
+      setFileError("An unexpected error occurred");
+      setIsLoading(false);
     }
   };
 
@@ -170,7 +234,7 @@ const QuizForm = () => {
         {inputType === "text" ? (
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1 text-[#57463E]">
-              Enter Text (max 3000 characters): <span className="text-red-500">*</span>
+              Enter Text (max 5000 characters): <span className="text-red-500">*</span>
             </label>
             <textarea
               rows={5}
@@ -178,9 +242,9 @@ const QuizForm = () => {
               onChange={(e) => setTextInput(e.target.value)}
               className="border border-[#57463E] rounded-md p-2 w-full text-[#57463E]"
               required
-              maxLength={3000}
+              maxLength={5000}
             ></textarea>
-            <div className="text-sm text-gray-500 mt-1">{textInput.length}/3000 characters</div>
+            <div className="text-sm text-gray-500 mt-1">{textInput.length}/5000 characters</div>
           </div>
         ) : (
           <div className="mb-4">
