@@ -14,6 +14,8 @@ const QuizForm = () => {
   const [numOfChoices, setNumOfChoices] = useState<number>(4);
   const [file, setFile] = useState<File | null>(null);
   const [textInput, setTextInput] = useState<string>("");
+  const [extractedText, setExtractedText] = useState<string>("");
+  const [showExtractedText, setShowExtractedText] = useState<boolean>(false);
   const [fileError, setFileError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [finishedLoading, setFinishedLoading] = useState<Boolean>(false);
@@ -42,8 +44,6 @@ const QuizForm = () => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-      //console.log("Number of pages in uploaded PDF:", pdf.numPages);
-      //return pdf.numPages === 1;
       if (pdf.numPages !== 1) {
         setFileError("Please upload a PDF with exactly one page");
         return false;
@@ -59,6 +59,8 @@ const QuizForm = () => {
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const selectedFile = e.target.files?.[0];
     setFileError("");
+    setShowExtractedText(false);
+    setExtractedText("");
 
     if (selectedFile) {
       if (selectedFile.type !== "application/pdf") {
@@ -77,6 +79,14 @@ const QuizForm = () => {
       }
 
       setFile(selectedFile);
+      try {
+        const text = await extractTextFromPDF(selectedFile);
+        setExtractedText(text);
+        setShowExtractedText(true);
+      } catch (error) {
+        setFileError("Failed to extract text from PDF");
+        console.error(error);
+      }
     } else {
       setFile(null);
     }
@@ -104,7 +114,7 @@ const QuizForm = () => {
     if (inputType === "text") {
       return validateTextInput(textInput);
     } else if (inputType === "file") {
-      return !!file && !fileError;
+      return !!file && !fileError && !!extractedText;
     }
 
     return false;
@@ -116,7 +126,6 @@ const QuizForm = () => {
     }
   };
 
-  // Updated form submission handler for QuizForm component
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
@@ -124,28 +133,7 @@ const QuizForm = () => {
     setFileError("");
 
     try {
-      let contentToProcess = "";
-
-      if (inputType === "text") {
-        contentToProcess = textInput;
-      } else if (inputType === "file" && file) {
-        try {
-          contentToProcess = await extractTextFromPDF(file);
-
-          // Validate extracted text
-          if (!contentToProcess || contentToProcess.trim().length === 0) {
-            throw new Error("No text could be extracted from the PDF");
-          }
-
-          if (contentToProcess.length > 5000) {
-            throw new Error("Extracted text exceeds 5000 characters");
-          }
-        } catch (error) {
-          setFileError(error instanceof Error ? error.message : "Failed to process PDF");
-          setIsLoading(false);
-          return;
-        }
-      }
+      let contentToProcess = inputType === "text" ? textInput : extractedText;
 
       const response = await fetch("/api/quiz", {
         method: "POST",
@@ -206,6 +194,7 @@ const QuizForm = () => {
             onClick={() => {
               setInputType("text");
               setFileError("");
+              setShowExtractedText(false);
             }}
             className={`flex-1 py-2 rounded-l-md ${
               inputType === "text"
@@ -259,6 +248,22 @@ const QuizForm = () => {
               required
             />
             {fileError && <p className="text-red-500 text-sm mt-1">{fileError}</p>}
+
+            {showExtractedText && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-1 text-[#57463E]">
+                  Extracted Text (Review and Edit if needed):
+                </label>
+                <textarea
+                  rows={5}
+                  value={extractedText}
+                  onChange={(e) => setExtractedText(e.target.value)}
+                  className="border border-[#57463E] rounded-md p-2 w-full text-[#57463E]"
+                  maxLength={5000}
+                ></textarea>
+                <div className="text-sm text-gray-500 mt-1">{extractedText.length}/5000 characters</div>
+              </div>
+            )}
           </div>
         )}
 
