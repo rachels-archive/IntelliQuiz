@@ -1,4 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
 
-module.exports = nextConfig
+const nextConfig = {
+  webpack: (config) => {
+    config.optimization.minimize = false;
+    return config;
+  },
+  swcMinify: false,
+};
+
+module.exports = nextConfig;
