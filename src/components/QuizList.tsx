@@ -178,14 +178,11 @@ const QuizList = ({ quiz }: Props) => {
 
   return (
     <div className="absolute -translate-x-1/2 -translate-y-1/2 md:w-[80vw] max-w-4xl w-[90vw] top-1/2 left-1/2">
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-between mt-10">
         <div className="flex flex-col">
-          <p>
-            <span className="text-slate-400">Title</span> &nbsp;
-            <span className="px-2 py-1 text-white rounded-lg bg-slate-800">{quiz.title}</span>
-          </p>
-          <div className="flex self-start mt-3 text-slate-400">
-            <Timer className="mr-2" />
+          <p className="text-slate-800 text-3xl font-bold">{quiz.title}</p>
+          <div className="flex self-start mt-3 text-white rounded-lg bg-slate-800 px-2 py-1">
+            <Timer className="mr-2 " />
             <span>{formatTimeDelta(hasEnded ? finalTime : elapsedTime)}</span>
           </div>
         </div>
