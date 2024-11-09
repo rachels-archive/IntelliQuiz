@@ -2,14 +2,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Question, Quiz } from "@prisma/client";
 import { ChevronRightIcon, Timer, BarChart } from "lucide-react";
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card"; // Assuming these are your custom components
-import { Button, buttonVariants } from "./ui/button"; // Assuming this is your custom button component
-import QuizCounter from "./ui/QuizCounter"; // Custom component for showing quiz stats
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Button, buttonVariants } from "./ui/button";
+import QuizCounter from "./ui/QuizCounter";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { differenceInSeconds } from "date-fns";
 import { cn, formatTimeDelta } from "@/lib/utils";
-
 import Link from "next/link";
 
 interface CheckAnswerPayload {
@@ -35,24 +34,12 @@ const QuizList = ({ quiz }: Props) => {
   const [wrongAnswers, setWrongAnswers] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasEnded, setHasEnded] = useState<boolean>(false);
-  const [startTime, setStartTime] = useState(new Date());
+  const [startTime] = useState(new Date());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [finalTime, setFinalTime] = useState<number>(0);
-  const [now, setNow] = useState<Date>(new Date());
 
   const { toast } = useToast();
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!hasEnded) {
-        setNow(new Date());
-      }
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [hasEnded]);
 
-  // Update timer every second while quiz is active
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (!hasEnded) {
@@ -68,13 +55,11 @@ const QuizList = ({ quiz }: Props) => {
   }, [questionIndex, quiz.questions]);
 
   const options = useMemo(() => {
-    if (!currentQuestion || !currentQuestion.options) {
-      return [];
-    }
+    if (!currentQuestion?.options) return [];
     return JSON.parse(currentQuestion.options as string) as string[];
   }, [currentQuestion]);
 
-  const checkAnswer = async (payload: CheckAnswerPayload) => {
+  const checkAnswer = useCallback(async (payload: CheckAnswerPayload) => {
     setIsLoading(true);
     try {
       const response = await axios.post("/api/checkAnswer", payload);
@@ -82,28 +67,30 @@ const QuizList = ({ quiz }: Props) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleNext = useCallback(async () => {
-    if (!currentQuestion) return;
-
-    const payload = {
-      questionId: currentQuestion.id,
-      userAnswer: options[selectedChoice],
-    };
-
-    const handleQuizCompletion = async () => {
+  const handleQuizCompletion = useCallback(
+    async (finalCorrectAnswers: number) => {
       const endTime = new Date();
       setFinalTime(differenceInSeconds(endTime, startTime));
-      setHasEnded(true);
 
       try {
-        await axios.post("/api/completeQuiz", {
+        const response = await axios.post("/api/completeQuiz", {
           quizId: quiz.id,
           timeStarted: startTime,
           timeEnded: endTime,
-          correctAnswers: correctAnswers,
+          correctAnswers: finalCorrectAnswers,
         } as QuizCompletionPayload);
+
+        const score = (finalCorrectAnswers / quiz.questions.length) * 100;
+
+        toast({
+          title: "Quiz Completed",
+          description: `Your score is ${score.toFixed(2)}%`,
+          variant: "success",
+        });
+
+        setHasEnded(true);
       } catch (error) {
         console.error("Failed to save quiz completion:", error);
         toast({
@@ -112,12 +99,23 @@ const QuizList = ({ quiz }: Props) => {
           variant: "destructive",
         });
       }
+    },
+    [quiz.id, quiz.questions.length, startTime, toast]
+  );
+
+  const handleNext = useCallback(async () => {
+    if (!currentQuestion) return;
+
+    const payload: CheckAnswerPayload = {
+      questionId: currentQuestion.id,
+      userAnswer: options[selectedChoice],
     };
 
     try {
       const result = await checkAnswer(payload);
+      const newCorrectAnswers = result.isCorrect ? correctAnswers + 1 : correctAnswers;
+
       if (result.isCorrect) {
-        setCorrectAnswers((prev) => prev + 1);
         toast({
           title: "Correct",
           description: "Good job!",
@@ -134,12 +132,13 @@ const QuizList = ({ quiz }: Props) => {
         });
       }
 
+      // Check if it's the last question
       if (questionIndex === quiz.questions.length - 1) {
-        await handleQuizCompletion();
-        /* Save the final time when quiz ends
-        setFinalTime(differenceInSeconds(new Date(), startTime));
-        setHasEnded(true);*/
+        // Update correctAnswers and then complete the quiz
+        setCorrectAnswers(newCorrectAnswers);
+        await handleQuizCompletion(newCorrectAnswers);
       } else {
+        setCorrectAnswers(newCorrectAnswers);
         setQuestionIndex((prev) => prev + 1);
         setSelectedChoice(0);
       }
@@ -151,7 +150,17 @@ const QuizList = ({ quiz }: Props) => {
         variant: "destructive",
       });
     }
-  }, [currentQuestion, questionIndex, selectedChoice, options, quiz.questions.length, startTime]);
+  }, [
+    currentQuestion,
+    questionIndex,
+    selectedChoice,
+    options,
+    correctAnswers,
+    quiz.questions.length,
+    handleQuizCompletion,
+    checkAnswer,
+    toast,
+  ]);
 
   if (hasEnded) {
     return (
@@ -188,7 +197,7 @@ const QuizList = ({ quiz }: Props) => {
             <div>{questionIndex + 1}</div>
             <div className="text-base text-slate-400">{quiz.questions.length}</div>
           </CardTitle>
-          <CardDescription className="flex-grow text-lg">{currentQuestion.question}</CardDescription>
+          <CardDescription className="flex-grow text-lg">{currentQuestion?.question}</CardDescription>
         </CardHeader>
       </Card>
       <div className="flex flex-col items-center justify-center w-full mt-4">

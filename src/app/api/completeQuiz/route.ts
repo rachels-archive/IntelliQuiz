@@ -13,15 +13,11 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const { quizId, timeStarted, timeEnded, correctAnswers, totalQuestions } = body;
-
     const quiz = await prisma.quiz.findUnique({ where: { id: quizId }, include: { questions: true } });
-
     if (!quiz) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
-
     const score = (correctAnswers / quiz.questions.length) * 100;
-
     const updatedQuiz = await prisma.quiz.update({
       where: { id: quizId },
       data: {
