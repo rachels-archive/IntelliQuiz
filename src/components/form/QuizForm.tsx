@@ -1,9 +1,8 @@
 "use client";
-
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { useState, useEffect, useMemo, useCallback, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import * as pdfjs from "pdfjs-dist";
 import LoadingQuestions from "../LoadingQuestions";
-import { useRouter } from "next/navigation";
 
 const QuizForm = () => {
   const router = useRouter();
@@ -17,8 +16,8 @@ const QuizForm = () => {
   const [extractedText, setExtractedText] = useState<string>("");
   const [showExtractedText, setShowExtractedText] = useState<boolean>(false);
   const [fileError, setFileError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<Boolean>(false);
-  const [finishedLoading, setFinishedLoading] = useState<Boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [finishedLoading, setFinishedLoading] = useState<boolean>(false);
   const [quizId, setQuizId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,7 +55,7 @@ const QuizForm = () => {
     }
   };
 
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const handleFileChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     setFileError("");
     setShowExtractedText(false);
@@ -90,41 +89,38 @@ const QuizForm = () => {
     } else {
       setFile(null);
     }
-  };
+  }, []);
 
-  const validateTextInput = (text: string): boolean => {
-    if (text.trim().length === 0) {
-      setFileError("Text input cannot be empty");
-      return false;
-    }
+  const handleTextInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setTextInput(newText);
+    setFileError("");
+  }, []);
 
-    if (text.length > 5000) {
-      setFileError("Text input must be less than 5000 characters");
-      return false;
-    }
+  const handleExtractedTextChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setExtractedText(newText);
+  }, []);
 
-    return true;
-  };
-
-  const isFormValid = (): boolean => {
+  const isFormValid = useMemo(() => {
     if (title.trim() === "") {
       return false;
     }
 
     if (inputType === "text") {
-      return validateTextInput(textInput);
+      return textInput.trim().length > 0 && textInput.length <= 5000;
     } else if (inputType === "file") {
       return !!file && !fileError && !!extractedText;
     }
 
     return false;
-  };
+  }, [title, inputType, textInput, file, fileError, extractedText]);
 
-  const handleLoadingComplete = () => {
+  const handleLoadingComplete = useCallback(() => {
     if (quizId) {
       router.push(`/quiz/${quizId}`);
     }
-  };
+  }, [quizId, router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -228,7 +224,7 @@ const QuizForm = () => {
             <textarea
               rows={5}
               value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
+              onChange={handleTextInputChange}
               className="border border-[#57463E] rounded-md p-2 w-full text-[#57463E]"
               required
               maxLength={5000}
@@ -257,7 +253,7 @@ const QuizForm = () => {
                 <textarea
                   rows={5}
                   value={extractedText}
-                  onChange={(e) => setExtractedText(e.target.value)}
+                  onChange={handleExtractedTextChange}
                   className="border border-[#57463E] rounded-md p-2 w-full text-[#57463E]"
                   maxLength={5000}
                 ></textarea>
@@ -300,8 +296,8 @@ const QuizForm = () => {
         <button
           type="submit"
           className={`mx-auto block bg-[#57463E] font-semibold text-white rounded-md py-2 px-6 
-   ${!isFormValid() ? "opacity-50 cursor-not-allowed" : "hover:bg-[#241d1a]"}`}
-          disabled={!isFormValid()}
+            ${!isFormValid ? "opacity-50 cursor-not-allowed" : "hover:bg-[#241d1a]"}`}
+          disabled={!isFormValid}
         >
           Generate
         </button>
