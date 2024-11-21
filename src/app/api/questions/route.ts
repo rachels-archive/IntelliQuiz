@@ -19,7 +19,8 @@ export const POST = async (req: Request) => {
 
     let questions: any[] = [];
 
-    let prompt = `You are a helpful assistant that generates ${numOfQuestions} quiz questions based on the following text:\n\n${textInput}\n\nPlease respond with a valid JSON array of question objects, each containing a "question", "answer", "option1", "option2", "option3 and option4".`;
+    let prompt = `You are a helpful assistant that generates ${numOfQuestions} quiz questions based on the following text:\n\n${textInput}\n\nPlease respond with a valid JSON array of question objects, each containing a "question", "answer", "option1", "option2", "option3 and option4". Do not include any backticks or additional formatting.
+`;
 
     const outputFormat = {
       question: "The question text",
